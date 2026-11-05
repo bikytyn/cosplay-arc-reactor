@@ -1,50 +1,61 @@
 # Cosplay Arc Reactor (MK II)
 
-Arc reactor pro cosplay Iron Mana na ESP8266 (NodeMCU) s WS2812B LEDkami a ovládáním přes webovou stránku z mobilu.
+An Iron Man arc reactor for cosplay, built on an ESP8266 (NodeMCU) with WS2812B LEDs and controlled from your phone through a web page.
 
 ## Hardware
 
-- NodeMCU ESP8266 (USB převodník CP2102 – je potřeba ovladač Silicon Labs CP210x)
-- WS2812B ring 24 LED + 3 LED uprostřed, zapojené za ringem (indexy 0–23 ring, 24–26 střed)
-- Data LEDek na pinu **D6**, pořadí barev GRB
-- 3D díly (STL) jsou ve složce [`3D files`](3D%20files)
+- NodeMCU ESP8266 with a CP2102 USB-to-serial chip (you need the Silicon Labs CP210x driver)
+- A 24-LED WS2812B ring, plus 3 center LEDs chained after it (indexes 0–23 are the ring, 24–26 are the center)
+- LED data on pin **D6**, GRB color order
+- 3D-printable parts (STL) are in [`3D files`](3D%20files)
 
-## Funkce
+## Features
 
-- **Boot sekvence po zapnutí** – jiskření ve středu, plazma se roztáčí kolem ringu a zrychluje, záblesk, naskočení. Délka roztáčení je nastavitelná (2–30 s).
-- **Režimy:** Reactor (klidový běh), Spin, Pulse (tlukot srdce), Rainbow, Rave (128 BPM stroboskop), Overload
-- **Akce:** znovu přehrát boot, Unibeam (nabití + výboj)
-- **Nastavení:** barva ringu a středu (+ předvolby), rychlost animací, jas
-- Nastavení se ukládá do flash paměti a vydrží vypnutí
+- **Boot sequence on power-up:** sparks in the center, then plasma spins around the ring and speeds up, then a flash as the reactor comes online. You can set the spin-up length from 2 to 30 s.
+- **Modes:**
+  - Reactor (idle glow)
+  - Spin
+  - Pulse (heartbeat)
+  - Rainbow
+  - Rave (128 BPM strobe)
+  - Overload
+- **Actions:** replay the boot sequence, or fire the Unibeam (charge-up, then a blast)
+- **Settings:** ring and center color (with presets), animation speed, brightness
+- Settings are saved to flash, so they survive a power cycle.
 
-## Ovládání
+## Control
 
-ESP vytváří vlastní Wi-Fi síť (router není potřeba):
+The ESP creates its own Wi-Fi network, so you don't need a router:
 
 | | |
 |---|---|
 | Wi-Fi | `MK2` |
-| Heslo | `jarvis2008` (změň v `src/main.cpp` – `AP_PASS`) |
-| Stránka | http://mk2.local nebo http://192.168.4.1 |
+| Password | `jarvis2008` (to change it, edit `AP_PASS` in `src/main.cpp`) |
+| Web page | http://mk2.local or http://192.168.4.1 |
 
-Na telefonu se stránka po připojení většinou otevře sama (captive portal).
+On most phones the page opens on its own after you connect (captive portal). Some phones don't support `mk2.local`. If it doesn't open, use `192.168.4.1`.
 
-Přes sériovou linku (115200 baud) jde poslat `b <0-255>` (jas) a `g` (přehrát boot), např. `python send.py g` (port COM9 je v `send.py`).
+You can also send commands over serial (115200 baud):
 
-## Build a nahrání
+- `b <0-255>` sets the brightness.
+- `g` replays the boot sequence.
 
-Projekt používá [PlatformIO](https://platformio.org/):
+For example, `python send.py g`. The serial port is set in `send.py` (COM9).
+
+## Build and flash
+
+The project uses [PlatformIO](https://platformio.org/):
 
 ```
 pip install platformio
 pio run -t upload
 ```
 
-Při vysokém jasu bere 27 LEDek až ~1,6 A – USB z PC to spolehlivě neutáhne a baterie rychle ubývá, doporučený jas je do ~150.
+At high brightness, the 27 LEDs can draw up to about 1.6 A. A PC USB port can't reliably supply that much, and it drains batteries fast. Keep the brightness at about 150 or lower.
 
-## Struktura
+## Project layout
 
-- `src/main.cpp` – firmware (animace, Wi-Fi AP, web server, mDNS, ukládání nastavení)
-- `src/web.h` – ovládací webová stránka
-- `send.py` – posílání sériových příkazů z PC
-- `platformio.ini` – konfigurace buildu
+- `src/main.cpp`: the firmware (animations, Wi-Fi access point, web server, mDNS, saved settings)
+- `src/web.h`: the web control page
+- `send.py`: sends serial commands from a PC
+- `platformio.ini`: the build configuration
